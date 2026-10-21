@@ -1,0 +1,2 @@
+- Build project using Gradle.
+- Run in cli or in IDE
