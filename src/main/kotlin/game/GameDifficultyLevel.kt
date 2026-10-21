@@ -1,11 +1,11 @@
 package game
 
-enum class GameLevel(val value: Int) {
+enum class GameDifficultyLevel(val value: Int) {
 
     EASY(10), MEDIUM(5), HARD(3);
 
     companion object {
-        fun of(input: Int): GameLevel =
+        fun of(input: Int): GameDifficultyLevel =
             when(input) {
                 1 -> EASY
                 2 -> MEDIUM

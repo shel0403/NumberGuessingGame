@@ -5,7 +5,7 @@ import kotlin.random.nextInt
 
 class NumberGuessingGame(private val guessingNumber: Int = Random.nextInt(1..100)) {
 
-    private var gameLevel: GameLevel? = null
+    private var gameDifficultyLevel: GameDifficultyLevel? = null
     private var guessesLeft: Int = 0
 
     private val greetingMessage = """
@@ -27,26 +27,26 @@ class NumberGuessingGame(private val guessingNumber: Int = Random.nextInt(1..100
     fun play() = System.`in`.bufferedReader().use { reader ->
         println(greetingMessage)
 
-        generateSequence(GameStatus.INIT) { gameStatus ->
+        repeat(generateSequence(GameStatus.INIT) { gameStatus ->
             when (gameStatus) {
                 GameStatus.INIT -> initGame {
                     print(levelChoseMessage)
 
-                    val gameLevel = reader
+                    val gameDifficultyLevel = reader
                         .readLine()
                         .trim()
                         .toInt()
-                        .let(GameLevel::of)
+                        .let(GameDifficultyLevel::of)
 
                     println(
                         """
-                            Great! You have selected the ${gameLevel.name} difficulty level.
-                            Let's start the game!
-                            
-                        """.trimIndent()
+                                Great! You have selected the ${gameDifficultyLevel.name} difficulty level.
+                                Let's start the game!
+                                
+                            """.trimIndent()
                     )
 
-                    gameLevel
+                    gameDifficultyLevel
                 }
 
                 GameStatus.IN_PROGRESS -> step {
@@ -60,13 +60,15 @@ class NumberGuessingGame(private val guessingNumber: Int = Random.nextInt(1..100
 
                     when {
                         guess == guessingNumber -> {
-                            println("Congratulations! You guessed the correct number in ${(gameLevel?.value ?: 0) - guessesLeft} attempts.")
+                            println("Congratulations! You guessed the correct number in ${(gameDifficultyLevel?.value ?: 0) - guessesLeft} attempts.")
                             GameStatus.END
                         }
+
                         guessesLeft <= 0 -> {
                             println("Sorry... There are no guesses left.")
                             GameStatus.END
                         }
+
                         else -> {
                             println("Incorrect! The number is ${if (guessingNumber < guess) "less" else "greater"} than $guess.")
                             GameStatus.IN_PROGRESS
@@ -89,18 +91,19 @@ class NumberGuessingGame(private val guessingNumber: Int = Random.nextInt(1..100
                         }
                 }
 
-                GameStatus.TERMINATE -> GameStatus.TERMINATE
+                else -> GameStatus.TERMINATE
             }
-        }.takeWhile { it != GameStatus.TERMINATE }
-            .forEach {  }
+        }.takeWhile { it != GameStatus.TERMINATE }.terminate()) {}
     }
 
-    fun initGame(gameLevelInit: () -> GameLevel): GameStatus {
-        gameLevel = gameLevelInit()
-        guessesLeft = gameLevel?.value ?: 0
+    private fun initGame(gameDifficultyLevelInit: () -> GameDifficultyLevel): GameStatus {
+        gameDifficultyLevel = gameDifficultyLevelInit()
+        guessesLeft = gameDifficultyLevel?.value ?: 0
 
         return GameStatus.IN_PROGRESS
     }
 
-    fun step(gameLevelStep: () -> GameStatus): GameStatus = gameLevelStep()
+    private fun step(gameLevelStep: () -> GameStatus): GameStatus = gameLevelStep()
+
+    private fun <T> Sequence<T>.terminate() = count()
 }
